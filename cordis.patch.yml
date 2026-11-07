@@ -1,0 +1,40 @@
+# dsh-blender-mcp — configuration-only bundle.
+#
+# Inserts one @deepseek-ai/dsh-mcp-client entry that bridges Blender into the
+# harness as mcp__blender__* tools.
+#
+# It runs Blender Lab's official MCP server (blmcp), which talks to the "MCP"
+# extension inside a running Blender over null-delimited JSON on localhost:9876.
+# Nothing needs to be cloned: uvx builds the server from source on first use and
+# caches it, so later starts take about a second.
+- insert:
+    - id: mcp-blender
+      name: "@deepseek-ai/dsh-mcp-client"
+      config:
+        serverName: blender
+        transport: stdio
+
+        # uvx must be on PATH. If the harness was launched from a GUI and cannot
+        # see it, replace this with the absolute path, e.g.
+        #   C:\Users\<you>\.local\bin\uvx.exe
+        command: uvx
+
+        # Pinned to an upstream release tag for reproducibility. Bumping this is
+        # the only change needed to pick up a new Blender-side server; see
+        # "Updating upstream" in README.md.
+        args:
+          - "--from"
+          - "git+https://projects.blender.org/lab/blender_mcp.git@v1.0.3#subdirectory=mcp"
+          - "blender-mcp"
+
+        env:
+          # Point at another host/port when Blender runs on a different machine.
+          BLENDER_MCP_HOST: localhost
+          BLENDER_MCP_PORT: "9876"
+
+        # Keep the harness usable when Blender is closed: the plugin loads, no
+        # tools register, and an error is logged instead of blocking startup.
+        failOnStartupError: false
+
+        # Modeling and render calls legitimately take minutes.
+        toolCallTimeoutMs: 300000
