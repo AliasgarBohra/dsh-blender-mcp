@@ -73,6 +73,15 @@ plugin_manager install_bundle --target 'C:\path\to\dsh-blender-mcp'          # f
 plugin_manager install_bundle --target '.\dsh-blender-mcp-1.0.0.tgz'         # tarball
 ```
 
+> **A folder install records that absolute path.** If you later move or delete
+> the folder, the plugin card under *Settings → Plugins* turns red with
+> `Package metadata error … <that path>\package.json`, because the profile still
+> points at a directory that no longer exists. The bundle is usually still
+> installed and working; only the card's metadata lookup fails. Fix it with
+> [Replacing a stale folder install](#replacing-a-stale-folder-install) rather
+> than by recreating the old folder. Prefer the Git URL unless you are actively
+> iterating on the bundle.
+
 Enable it if it isn't already, then restart Blender if it was closed.
 
 Requirements for the repo host: it must be **public** and reachable over HTTPS.
@@ -121,6 +130,24 @@ plugin_manager install_bundle --target 'dsh-blender-mcp@1.0.1'
 Removing the bundle leaves Blender and the MCP extension untouched — it only
 removes the harness-side wiring, and the `uvx` cache stays warm for a reinstall.
 
+### Replacing a stale folder install
+
+If you once installed from a local folder and later moved or deleted it, the
+profile still references that path. The symptom is a red plugin card reading
+`Package metadata error … \package.json: Error: ENOENT: no such file or directory`.
+The tools may even still work — only the metadata lookup is broken.
+
+Swap the folder install for the Git one:
+
+```powershell
+plugin_manager remove_bundle --target dsh-blender-mcp
+plugin_manager install_bundle --target 'https://github.com/AliasgarBohra/dsh-blender-mcp'
+```
+
+Then reload the GUI (`Ctrl+R`) or restart DSH so the plugin card re-reads its
+metadata. Do **not** recreate the old folder to silence the error — that keeps
+the profile pinned to a path you no longer maintain.
+
 ### Two Blender instances
 
 One entry talks to one port. For a second Blender, set that instance's extension
@@ -137,6 +164,7 @@ arrive as `mcp__blender2__*`.
 | `Cannot connect to Blender at localhost:9876…` | The server is up but Blender isn't listening: wrong port, or the extension is disabled. |
 | First call hangs ~20 s | `uvx` is building the server. Subsequent calls are instant. Needs network the first time. |
 | Tools stop mid-session | Blender was closed or the extension restarted. The client reconnects automatically once Blender is back. |
+| Plugin card shows `Package metadata error … .dsh\bundles\dsh-blender-mcp\package.json` | A previous **folder** install points at a directory that no longer exists. The tools can still work. Remove the bundle and reinstall from the Git URL — see [Replacing a stale folder install](#replacing-a-stale-folder-install). |
 
 ## Security
 

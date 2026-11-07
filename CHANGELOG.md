@@ -2,6 +2,22 @@
 
 All notable changes to this bundle. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow [SemVer](https://semver.org/).
 
+## [1.0.1] — 2026-11-07
+
+### Fixed
+
+- Document the `Package metadata error … package.json: ENOENT` failure that
+  appears when an earlier **folder** install points at a directory that has since
+  been moved or deleted. The bundle still loads in that state; only the plugin
+  card's metadata lookup fails.
+
+### Added
+
+- **Replacing a stale folder install**: remove the bundle, reinstall from the Git
+  URL, then reload. Discourages recreating the dead folder to silence the error.
+- Troubleshooting row for the metadata error, and a warning next to the local
+  folder/tarball install commands that those record an absolute path.
+
 ## [1.0.0] — 2026-11-07
 
 ### Added

@@ -1,6 +1,6 @@
 {
   "name": "dsh-blender-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Turn a running Blender into mcp__blender__* tools for DeepSeek Harness, via Blender Lab's official MCP server.",
   "license": "MIT",
   "author": "Ali Asgar Hamid",
