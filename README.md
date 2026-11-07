@@ -44,19 +44,39 @@ and caches it; later starts take about a second.
 
 ## Install
 
-Once published to npm, it is a package name:
+Install straight from the Git repository — no package registry involved:
 
-> **Settings → Plugins → Add plugin** → `dsh-blender-mcp` → Install
+> **Settings → Plugins → Add plugin** → paste the repo URL → Install
 
-Without npm — local folder, tarball, or a git repo:
-
-```powershell
-plugin_manager install_bundle --target 'C:\path\to\dsh-blender-mcp'         # folder
-plugin_manager install_bundle --target '.\dsh-blender-mcp-1.0.0.tgz'        # tarball
-plugin_manager install_bundle --target 'https://github.com/<you>/<repo>'    # git
+```
+https://github.com/alibohra752/dsh-blender-mcp
 ```
 
-Enable it, then restart Blender if it was closed.
+Paste that exact URL into the box (adjust the username if your repo lives
+elsewhere). DSH runs `git ls-remote` first, so a wrong URL or a private repo
+fails immediately with a clear message instead of hanging.
+
+From the CLI, or to pin a release:
+
+```powershell
+# latest main
+plugin_manager install_bundle --target 'https://github.com/alibohra752/dsh-blender-mcp'
+
+# pinned to a tag (reproducible)
+plugin_manager install_bundle --target 'git+https://github.com/alibohra752/dsh-blender-mcp#v1.0.0'
+```
+
+Local development also works:
+
+```powershell
+plugin_manager install_bundle --target 'C:\path\to\dsh-blender-mcp'          # folder
+plugin_manager install_bundle --target '.\dsh-blender-mcp-1.0.0.tgz'         # tarball
+```
+
+Enable it if it isn't already, then restart Blender if it was closed.
+
+Requirements for the repo host: it must be **public** and reachable over HTTPS.
+Cloning runs as your user, so SSH remotes work too if your keys are already set up.
 
 ## Verify
 
@@ -129,32 +149,47 @@ a remote Blender, enable *Allow Remote Connections*, bind to the machine's LAN
 address, and set `BLENDER_MCP_HOST` — only on a trusted network, or over an SSH
 tunnel.
 
-## Publishing
+## Publishing to Git
 
-Publish-ready: no dependencies, no build step.
+This bundle ships from a Git repository, so a release is a commit plus a tag:
 
 ```powershell
-npm login                     # once
-npm pack --dry-run            # confirm exactly the declared files ship
-npm publish --access public   # name must be free on npm
+git add -A
+git commit -m "v1.0.1: <what changed>"
+git tag v1.0.1
+git push origin main --tags
 ```
 
-Bump `version` for every release — npm refuses to overwrite. A tag-triggered
-GitHub Actions workflow is included at `.github/workflows/publish.yml`; it checks
-that the tag matches `package.json` before publishing, and expects an `NPM_TOKEN`
-secret.
+Rules that keep Git installs working:
 
-**Do not add `engines.dsh` casually.** A range like `^0.2.0` excludes prerelease
-harness builds such as `0.2.2-rc.1` under strict semver, which blocks the install
-entirely. Add a range only after testing it.
+- **`version` and the tag must match.** CI enforces it; a mismatched tag still
+  installs, but users then get a version nobody can reproduce.
+- **Every file the bundle needs must be committed.** Git installs fetch the
+  repository, not your working directory — anything untracked is invisible.
+- **`files` in `package.json` still applies.** It filters what lands in a packed
+  install, so a file missing from it is missing for users even when committed.
+- **Keep `node_modules/` and `*.tgz` ignored** (already in `.gitignore`) so the
+  repository stays small and installs fast.
 
-### Distribution channels
+CI at `.github/workflows/validate.yml` checks the manifest, the patch YAML, and
+the tag/version match on every push and PR — no secrets required.
 
-| Channel | How users install | Trade-off |
-|---|---|---|
-| npm registry | package name in the Add-plugin box | best UX, needs an npm account |
-| GitHub repo | the repo URL in the Add-plugin box | no npm account, but users must know the URL |
-| Custom plugin index | Discover tab, with the experimental `dsh-experimental-plugin-market-bundle` | discoverable, but needs an index JSON and an experimental bundle |
+### Pinning for users
+
+`#v1.0.0` after the repo URL installs that exact tag; omitting it tracks `main`.
+Pinned installs never surprise anyone with a change they didn't choose.
+
+### Do not add `engines.dsh` casually
+
+A range like `^0.2.0` excludes prerelease harness builds such as `0.2.2-rc.1`
+under strict semver, which blocks the install entirely. Add a range only after
+testing it.
+
+### npm, optionally
+
+Nothing here needs npm, but the package is registry-ready if you ever want the
+one-word install: `npm publish --access public`. The name `dsh-blender-mcp` is
+free on npm. Doing both is fine — the same files serve both channels.
 
 ## Credits
 

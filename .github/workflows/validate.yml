@@ -1,0 +1,64 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Bundle manifest is complete
+        run: |
+          node -e "
+            const fs = require('fs');
+            const pkg = require('./package.json');
+            const fail = (m) => { console.error('::error::' + m); process.exit(1); };
+            if (!pkg.name) fail('package.json has no name');
+            if (!pkg.version) fail('package.json has no version');
+            if (!pkg.dsh?.bundle?.patch) fail('package.json is missing dsh.bundle.patch');
+            if (!fs.existsSync(pkg.dsh.bundle.patch)) fail('patch file not found: ' + pkg.dsh.bundle.patch);
+            for (const f of (pkg.files ?? [])) {
+              if (!fs.existsSync(f)) fail('declared file missing: ' + f);
+            }
+            for (const f of ['README.md', 'LICENSE', 'CHANGELOG.md']) {
+              if (!fs.existsSync(f)) fail('expected file missing: ' + f);
+            }
+            console.log('manifest ok for ' + pkg.name + '@' + pkg.version);
+          "
+
+      - name: Patch file is valid YAML and inserts the MCP client
+        run: |
+          npm --no-fund --no-audit install --no-save js-yaml
+          node -e "
+            const fs = require('fs');
+            const yaml = require('js-yaml');
+            const pkg = require('./package.json');
+            const doc = yaml.load(fs.readFileSync(pkg.dsh.bundle.patch, 'utf8'));
+            if (!Array.isArray(doc)) { console.error('::error::patch is not a YAML array'); process.exit(1); }
+            const rows = doc.flatMap((entry) => entry?.insert ?? []);
+            if (!rows.length) { console.error('::error::patch inserts nothing'); process.exit(1); }
+            for (const row of rows) {
+              if (!row.id || !row.name) { console.error('::error::row needs id and name'); process.exit(1); }
+              if (!row.config?.serverName) { console.error('::error::row needs config.serverName'); process.exit(1); }
+              console.log('row ' + row.id + ' -> ' + row.name + ' (' + row.config.transport + ')');
+            }
+          "
+
+      - name: Tag matches package version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::tag $TAG_VERSION does not match package.json version $PKG_VERSION"
+            exit 1
+          fi

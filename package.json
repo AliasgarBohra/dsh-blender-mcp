@@ -4,6 +4,14 @@
   "description": "Turn a running Blender into mcp__blender__* tools for DeepSeek Harness, via Blender Lab's official MCP server.",
   "license": "MIT",
   "author": "Ali Asgar Hamid",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alibohra752/dsh-blender-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alibohra752/dsh-blender-mcp/issues"
+  },
+  "homepage": "https://github.com/alibohra752/dsh-blender-mcp#readme",
   "keywords": [
     "dsh",
     "dsh-bundle",
