@@ -49,7 +49,7 @@ Install straight from the Git repository — no package registry involved:
 > **Settings → Plugins → Add plugin** → paste the repo URL → Install
 
 ```
-https://github.com/alibohra752/dsh-blender-mcp
+https://github.com/AliasgarBohra/dsh-blender-mcp
 ```
 
 Paste that exact URL into the box (adjust the username if your repo lives
@@ -60,10 +60,10 @@ From the CLI, or to pin a release:
 
 ```powershell
 # latest main
-plugin_manager install_bundle --target 'https://github.com/alibohra752/dsh-blender-mcp'
+plugin_manager install_bundle --target 'https://github.com/AliasgarBohra/dsh-blender-mcp'
 
 # pinned to a tag (reproducible)
-plugin_manager install_bundle --target 'git+https://github.com/alibohra752/dsh-blender-mcp#v1.0.0'
+plugin_manager install_bundle --target 'git+https://github.com/AliasgarBohra/dsh-blender-mcp#v1.0.0'
 ```
 
 Local development also works:

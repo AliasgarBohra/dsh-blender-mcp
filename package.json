@@ -6,12 +6,12 @@
   "author": "Ali Asgar Hamid",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/alibohra752/dsh-blender-mcp.git"
+    "url": "git+https://github.com/AliasgarBohra/dsh-blender-mcp.git"
   },
   "bugs": {
-    "url": "https://github.com/alibohra752/dsh-blender-mcp/issues"
+    "url": "https://github.com/AliasgarBohra/dsh-blender-mcp/issues"
   },
-  "homepage": "https://github.com/alibohra752/dsh-blender-mcp#readme",
+  "homepage": "https://github.com/AliasgarBohra/dsh-blender-mcp#readme",
   "keywords": [
     "dsh",
     "dsh-bundle",
